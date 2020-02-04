@@ -2,8 +2,11 @@ use js_sys::JSON;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
 
-use plotters_backend::{BackendCoord, BackendStyle, DrawingBackend, DrawingErrorKind, BackendColor, FontTransform, BackendTextStyle};
 use plotters_backend::text_anchor::{HPos, VPos};
+use plotters_backend::{
+    BackendColor, BackendCoord, BackendStyle, BackendTextStyle, DrawingBackend, DrawingErrorKind,
+    FontTransform,
+};
 
 /// The backend that is drawing on the HTML canvas
 /// TODO: Support double buffering
@@ -213,13 +216,15 @@ impl DrawingBackend for CanvasBackend {
                 .set_stroke_style(&make_canvas_color(style.color()));
         }
         self.context.begin_path();
-        self.context.arc(
-            f64::from(center.0),
-            f64::from(center.1),
-            f64::from(radius),
-            0.0,
-            std::f64::consts::PI * 2.0,
-        ).map_err(error_cast)?;
+        self.context
+            .arc(
+                f64::from(center.0),
+                f64::from(center.1),
+                f64::from(radius),
+                0.0,
+                std::f64::consts::PI * 2.0,
+            )
+            .map_err(error_cast)?;
         if fill {
             self.context.fill();
         } else {
@@ -228,7 +233,7 @@ impl DrawingBackend for CanvasBackend {
         Ok(())
     }
 
-    fn draw_text<S:BackendTextStyle>(
+    fn draw_text<S: BackendTextStyle>(
         &mut self,
         text: &str,
         style: &S,
@@ -251,7 +256,9 @@ impl DrawingBackend for CanvasBackend {
 
         if degree != 0.0 {
             self.context.save();
-            self.context.translate(f64::from(x), f64::from(y)).map_err(error_cast)?;
+            self.context
+                .translate(f64::from(x), f64::from(y))
+                .map_err(error_cast)?;
             self.context.rotate(degree).map_err(error_cast)?;
             x = 0;
             y = 0;
@@ -279,7 +286,9 @@ impl DrawingBackend for CanvasBackend {
             style.size(),
             style.family().as_str(),
         ));
-        self.context.fill_text(text, f64::from(x), f64::from(y)).map_err(error_cast)?;
+        self.context
+            .fill_text(text, f64::from(x), f64::from(y))
+            .map_err(error_cast)?;
 
         if degree != 0.0 {
             self.context.restore();
