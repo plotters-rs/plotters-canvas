@@ -2,9 +2,8 @@ use js_sys::JSON;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
 
-use crate::drawing::backend::{BackendCoord, BackendStyle, DrawingBackend, DrawingErrorKind};
-use crate::style::text_anchor::{HPos, VPos};
-use crate::style::{Color, FontTransform, RGBAColor, TextStyle};
+use plotters_backend::{BackendCoord, BackendStyle, DrawingBackend, DrawingErrorKind, BackendColor, FontTransform, BackendTextStyle};
+use plotters_backend::text_anchor::{HPos, VPos};
 
 /// The backend that is drawing on the HTML canvas
 /// TODO: Support double buffering
@@ -27,14 +26,12 @@ impl std::fmt::Debug for CanvasError {
     }
 }
 
-impl From<JsValue> for DrawingErrorKind<CanvasError> {
-    fn from(e: JsValue) -> DrawingErrorKind<CanvasError> {
-        DrawingErrorKind::DrawingError(CanvasError(
-            JSON::stringify(&e)
-                .map(|s| Into::<String>::into(&s))
-                .unwrap_or_else(|_| "Unknown".to_string()),
-        ))
-    }
+fn error_cast(e: JsValue) -> DrawingErrorKind<CanvasError> {
+    DrawingErrorKind::DrawingError(CanvasError(
+        JSON::stringify(&e)
+            .map(|s| Into::<String>::into(&s))
+            .unwrap_or_else(|_| "Unknown".to_string()),
+    ))
 }
 
 impl std::error::Error for CanvasError {}
@@ -63,9 +60,9 @@ impl CanvasBackend {
     }
 }
 
-fn make_canvas_color(color: RGBAColor) -> JsValue {
-    let (r, g, b) = color.rgb();
-    let a = color.alpha();
+fn make_canvas_color(color: BackendColor) -> JsValue {
+    let (r, g, b) = color.rgb;
+    let a = color.alpha;
     format!("rgba({},{},{},{})", r, g, b, a).into()
 }
 
@@ -89,14 +86,14 @@ impl DrawingBackend for CanvasBackend {
     fn draw_pixel(
         &mut self,
         point: BackendCoord,
-        style: &RGBAColor,
+        style: BackendColor,
     ) -> Result<(), DrawingErrorKind<CanvasError>> {
-        if style.alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
 
         self.context
-            .set_fill_style(&make_canvas_color(style.as_color()));
+            .set_fill_style(&make_canvas_color(style.color()));
         self.context
             .fill_rect(f64::from(point.0), f64::from(point.1), 1.0, 1.0);
         Ok(())
@@ -108,12 +105,12 @@ impl DrawingBackend for CanvasBackend {
         to: BackendCoord,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        if style.as_color().alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
 
         self.context
-            .set_stroke_style(&make_canvas_color(style.as_color()));
+            .set_stroke_style(&make_canvas_color(style.color()));
         self.context.begin_path();
         self.context.move_to(f64::from(from.0), f64::from(from.1));
         self.context.line_to(f64::from(to.0), f64::from(to.1));
@@ -128,12 +125,12 @@ impl DrawingBackend for CanvasBackend {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        if style.as_color().alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
         if fill {
             self.context
-                .set_fill_style(&make_canvas_color(style.as_color()));
+                .set_fill_style(&make_canvas_color(style.color()));
             self.context.fill_rect(
                 f64::from(upper_left.0),
                 f64::from(upper_left.1),
@@ -142,7 +139,7 @@ impl DrawingBackend for CanvasBackend {
             );
         } else {
             self.context
-                .set_stroke_style(&make_canvas_color(style.as_color()));
+                .set_stroke_style(&make_canvas_color(style.color()));
             self.context.stroke_rect(
                 f64::from(upper_left.0),
                 f64::from(upper_left.1),
@@ -158,14 +155,14 @@ impl DrawingBackend for CanvasBackend {
         path: I,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        if style.as_color().alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
         let mut path = path.into_iter();
         self.context.begin_path();
         if let Some(start) = path.next() {
             self.context
-                .set_stroke_style(&make_canvas_color(style.as_color()));
+                .set_stroke_style(&make_canvas_color(style.color()));
             self.context.move_to(f64::from(start.0), f64::from(start.1));
             for next in path {
                 self.context.line_to(f64::from(next.0), f64::from(next.1));
@@ -180,14 +177,14 @@ impl DrawingBackend for CanvasBackend {
         path: I,
         style: &S,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        if style.as_color().alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
         let mut path = path.into_iter();
         self.context.begin_path();
         if let Some(start) = path.next() {
             self.context
-                .set_fill_style(&make_canvas_color(style.as_color()));
+                .set_fill_style(&make_canvas_color(style.color()));
             self.context.move_to(f64::from(start.0), f64::from(start.1));
             for next in path {
                 self.context.line_to(f64::from(next.0), f64::from(next.1));
@@ -205,15 +202,15 @@ impl DrawingBackend for CanvasBackend {
         style: &S,
         fill: bool,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        if style.as_color().alpha() == 0.0 {
+        if style.color().alpha == 0.0 {
             return Ok(());
         }
         if fill {
             self.context
-                .set_fill_style(&make_canvas_color(style.as_color()));
+                .set_fill_style(&make_canvas_color(style.color()));
         } else {
             self.context
-                .set_stroke_style(&make_canvas_color(style.as_color()));
+                .set_stroke_style(&make_canvas_color(style.color()));
         }
         self.context.begin_path();
         self.context.arc(
@@ -222,7 +219,7 @@ impl DrawingBackend for CanvasBackend {
             f64::from(radius),
             0.0,
             std::f64::consts::PI * 2.0,
-        )?;
+        ).map_err(error_cast)?;
         if fill {
             self.context.fill();
         } else {
@@ -231,21 +228,20 @@ impl DrawingBackend for CanvasBackend {
         Ok(())
     }
 
-    fn draw_text(
+    fn draw_text<S:BackendTextStyle>(
         &mut self,
         text: &str,
-        style: &TextStyle,
+        style: &S,
         pos: BackendCoord,
     ) -> Result<(), DrawingErrorKind<Self::ErrorType>> {
-        let font = &style.font;
-        let color = &style.color;
-        if color.alpha() == 0.0 {
+        let color = style.color();
+        if color.alpha == 0.0 {
             return Ok(());
         }
 
         let (mut x, mut y) = (pos.0, pos.1);
 
-        let degree = match font.get_transform() {
+        let degree = match style.transform() {
             FontTransform::None => 0.0,
             FontTransform::Rotate90 => 90.0,
             FontTransform::Rotate180 => 180.0,
@@ -255,20 +251,20 @@ impl DrawingBackend for CanvasBackend {
 
         if degree != 0.0 {
             self.context.save();
-            self.context.translate(f64::from(x), f64::from(y))?;
-            self.context.rotate(degree)?;
+            self.context.translate(f64::from(x), f64::from(y)).map_err(error_cast)?;
+            self.context.rotate(degree).map_err(error_cast)?;
             x = 0;
             y = 0;
         }
 
-        let text_baseline = match style.pos.v_pos {
+        let text_baseline = match style.anchor().v_pos {
             VPos::Top => "top",
             VPos::Center => "middle",
             VPos::Bottom => "bottom",
         };
         self.context.set_text_baseline(text_baseline);
 
-        let text_align = match style.pos.h_pos {
+        let text_align = match style.anchor().h_pos {
             HPos::Left => "start",
             HPos::Right => "end",
             HPos::Center => "center",
@@ -279,11 +275,11 @@ impl DrawingBackend for CanvasBackend {
             .set_fill_style(&make_canvas_color(color.clone()));
         self.context.set_font(&format!(
             "{} {}px {}",
-            font.get_style().as_str(),
-            font.get_size(),
-            font.get_name()
+            style.style().as_str(),
+            style.size(),
+            style.family().as_str(),
         ));
-        self.context.fill_text(text, f64::from(x), f64::from(y))?;
+        self.context.fill_text(text, f64::from(x), f64::from(y)).map_err(error_cast)?;
 
         if degree != 0.0 {
             self.context.restore();
@@ -296,9 +292,9 @@ impl DrawingBackend for CanvasBackend {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::element::Circle;
-    use crate::prelude::*;
-    use crate::style::text_anchor::Pos;
+    use plotters::element::Circle;
+    use plotters::prelude::*;
+    use plotters_backend::text_anchor::Pos;
     use wasm_bindgen_test::wasm_bindgen_test_configure;
     use wasm_bindgen_test::*;
     use web_sys::Document;
