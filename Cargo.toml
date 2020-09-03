@@ -1,6 +1,6 @@
 [package]
 name = "plotters-canvas"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Hao Hou <haohou302@gmail.com>"]
 edition = "2018"
 license = "MIT"
@@ -12,7 +12,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-plotters-backend = "0.0.*"
+plotters-backend = "^0.3.*"
 js-sys= "0.3.32"
 wasm-bindgen = "0.2.55"
 
@@ -21,5 +21,5 @@ version = "0.3.32"
 features = ['Document', 'DomRect', 'Element', 'HtmlElement', 'Node', 'Window', 'HtmlCanvasElement', 'CanvasRenderingContext2d']
 
 [dev-dependencies]
-plotters = "^0.2.*"
+plotters = "^0.3.*"
 wasm-bindgen-test = "0.3.5"
