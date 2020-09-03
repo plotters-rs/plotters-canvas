@@ -1,10 +1,13 @@
 [package]
 name = "plotters-canvas"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Hao Hou <haohou302@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Plotters SVG Backend"
+description = "Plotters HTML5 Canvas Backend"
+homepage = "https://plotters-rs.github.io"
+repository = "https://github.com/plotters-rs/plotters-canvas"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -18,5 +21,5 @@ version = "0.3.32"
 features = ['Document', 'DomRect', 'Element', 'HtmlElement', 'Node', 'Window', 'HtmlCanvasElement', 'CanvasRenderingContext2d']
 
 [dev-dependencies]
-plotters = { path = "../plotters", default-features = false }
+plotters = "^0.2.*"
 wasm-bindgen-test = "0.3.5"

@@ -112,6 +112,7 @@ impl DrawingBackend for CanvasBackend {
 
         self.context
             .set_stroke_style(&make_canvas_color(style.color()));
+        self.context.set_line_width(style.stroke_width() as f64);
         self.context.begin_path();
         self.context.move_to(f64::from(from.0), f64::from(from.1));
         self.context.line_to(f64::from(to.0), f64::from(to.1));
