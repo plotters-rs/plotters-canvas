@@ -1,0 +1,17 @@
+name: WASM Target
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install WASM tool chain
+      run: rustup target add wasm32-unknown-unknown
+    - name: Install wasm-pack 
+      run: cargo install wasm-pack
+    - name: Install fireox
+      run: sudo apt-get install firefox
+    - name: Run WASM test cases
+      run: wasm-pack test --headless --firefox

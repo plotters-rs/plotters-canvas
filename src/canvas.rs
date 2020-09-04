@@ -65,7 +65,7 @@ impl CanvasBackend {
     /// Sets the stroke style and line width in the underlying context.
     fn set_line_style(&mut self, style: &impl BackendStyle) {
         self.context
-            .set_stroke_style(&make_canvas_color(style.as_color()));
+            .set_stroke_style(&make_canvas_color(style.color()));
         self.context.set_line_width(style.stroke_width() as f64);
     }
 }
@@ -346,7 +346,7 @@ mod test {
         let mut chart = ChartBuilder::on(&root)
             .caption("This is a test", ("sans-serif", 20))
             .set_all_label_area_size(40)
-            .build_ranged(0..10, 0..10)
+            .build_cartesian_2d(0..10, 0..10)
             .unwrap();
 
         chart
@@ -381,7 +381,7 @@ mod test {
         let mut chart = ChartBuilder::on(&root)
             .caption("All anchor point positions", ("sans-serif", 20))
             .set_all_label_area_size(40)
-            .build_ranged(0..100, 0..50)
+            .build_cartesian_2d(0..100, 0..50)
             .unwrap();
 
         chart
@@ -464,7 +464,7 @@ mod test {
         let mut chart = ChartBuilder::on(&root)
             .caption("All series label positions", ("sans-serif", 20))
             .set_all_label_area_size(40)
-            .build_ranged(0..50, 0..50)
+            .build_cartesian_2d(0..50, 0..50)
             .unwrap();
 
         chart
