@@ -12,7 +12,7 @@ jobs:
     - name: Install wasm-pack 
       run: cargo install wasm-pack
     - name: Install Node.js
-      uses: action/setup-node@v1
+      uses: actions/setup-node@v1
     - name: Install Chrome Webdriver
       run: npm i -g chromedriver@80.0.2
     - name: Run WASM test cases
