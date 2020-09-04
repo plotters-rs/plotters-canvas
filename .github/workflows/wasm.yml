@@ -11,7 +11,9 @@ jobs:
       run: rustup target add wasm32-unknown-unknown
     - name: Install wasm-pack 
       run: cargo install wasm-pack
-    - name: Install fireox
-      run: sudo apt-get install firefox
+    - name: Install Node.js
+      use: action/setup-node@v1
+    - name: Install Chrome Webdriver
+      run: npm i -g chromedriver@80.0.2
     - name: Run WASM test cases
-      run: wasm-pack test --headless --firefox
+      run: wasm-pack test --headless --chrome
