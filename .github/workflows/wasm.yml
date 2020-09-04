@@ -16,4 +16,4 @@ jobs:
     - name: Install Chrome Webdriver
       run: npm i -g chromedriver@80.0.2
     - name: Run WASM test cases
-      run: wasm-pack test --headless --firefox
+      run: wasm-pack test --headless --chrome
