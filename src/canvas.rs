@@ -141,8 +141,8 @@ impl DrawingBackend for CanvasBackend {
             self.context.fill_rect(
                 f64::from(upper_left.0),
                 f64::from(upper_left.1),
-                f64::from(bottom_right.0 - upper_left.0),
-                f64::from(bottom_right.1 - upper_left.1),
+                f64::from(bottom_right.0 - upper_left.0 + 1),
+                f64::from(bottom_right.1 - upper_left.1 + 1),
             );
         } else {
             self.set_line_style(style);
@@ -531,5 +531,40 @@ mod test {
         }
 
         check_content(&document, "test_draw_pixel_alphas");
+    }
+
+    #[wasm_bindgen_test]
+    fn test_rect_width_and_height() {
+        let (width, height) = (100_i32, 100_i32);
+        let document = window().unwrap().document().unwrap();
+        let canvas = create_canvas(
+            &document,
+            "test_rect_width_and_height",
+            width as u32,
+            height as u32,
+        );
+        let backend = CanvasBackend::with_canvas_object(canvas).expect("cannot find canvas");
+        let root = backend.into_drawing_area();
+        root.fill(&WHITE).unwrap();
+
+        check_content(&document, "test_rect_width_and_height");
+
+        let canvas: HtmlCanvasElement = document
+            .get_element_by_id("test_rect_width_and_height")
+            .unwrap()
+            .dyn_into()
+            .unwrap();
+        let context: CanvasRenderingContext2d = canvas
+            .get_context("2d")
+            .unwrap()
+            .unwrap()
+            .dyn_into()
+            .unwrap();
+        let data = context
+            .get_image_data((width - 1) as f64, (height - 1) as f64, 1.0, 1.0)
+            .unwrap()
+            .data()
+            .0;
+        assert_eq!(data, vec![255; 4]);
     }
 }

@@ -25,3 +25,7 @@ features = ['Document', 'DomRect', 'Element', 'HtmlElement', 'Node', 'Window', '
 [dev-dependencies]
 plotters = "^0.3.0"
 wasm-bindgen-test = "^0.3.17"
+
+[dev-dependencies.web-sys]
+version = "0.3.32"
+features = ['ImageData']
