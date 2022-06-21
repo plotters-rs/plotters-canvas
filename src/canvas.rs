@@ -252,6 +252,7 @@ impl DrawingBackend for CanvasBackend {
             FontTransform::Rotate90 => 90.0,
             FontTransform::Rotate180 => 180.0,
             FontTransform::Rotate270 => 270.0,
+            FontTransform::RotateAngle(angle) => angle as f64,
         } / 180.0
             * std::f64::consts::PI;
 
