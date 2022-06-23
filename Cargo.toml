@@ -12,8 +12,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.plotters-backend]
-git = "https://github.com/plotters-rs/plotters-backend"
-# version = "0.3.1"
+git = "https://github.com/plotters-rs/plotters"
 
 [dependencies]
 js-sys= "0.3.32"
@@ -29,4 +28,3 @@ wasm-bindgen-test = "^0.3.17"
 [dev-dependencies.plotters]
 default_features = false
 git = "https://github.com/plotters-rs/plotters"
-# version = "0.3.1"
