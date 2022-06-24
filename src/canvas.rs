@@ -76,6 +76,10 @@ fn make_canvas_color(color: BackendColor) -> JsValue {
     format!("rgba({},{},{},{})", r, g, b, a).into()
 }
 
+fn to_f64_offset(x: i32) -> f64 {
+    f64::from(x) + 0.5
+}
+
 impl DrawingBackend for CanvasBackend {
     type ErrorType = CanvasError;
 
@@ -119,8 +123,11 @@ impl DrawingBackend for CanvasBackend {
 
         self.set_line_style(style);
         self.context.begin_path();
-        self.context.move_to(f64::from(from.0), f64::from(from.1));
-        self.context.line_to(f64::from(to.0), f64::from(to.1));
+        self.context.set_line_cap("square");
+        self.context
+            .move_to(to_f64_offset(from.0), to_f64_offset(from.1));
+        self.context
+            .line_to(to_f64_offset(to.0), to_f64_offset(to.1));
         self.context.stroke();
         Ok(())
     }
@@ -147,10 +154,10 @@ impl DrawingBackend for CanvasBackend {
         } else {
             self.set_line_style(style);
             self.context.stroke_rect(
-                f64::from(upper_left.0),
-                f64::from(upper_left.1),
-                f64::from(bottom_right.0 - upper_left.0),
-                f64::from(bottom_right.1 - upper_left.1),
+                to_f64_offset(upper_left.0),
+                to_f64_offset(upper_left.1),
+                to_f64_offset(bottom_right.0 - upper_left.0),
+                to_f64_offset(bottom_right.1 - upper_left.1),
             );
         }
         Ok(())
@@ -166,11 +173,14 @@ impl DrawingBackend for CanvasBackend {
         }
         let mut path = path.into_iter();
         self.context.begin_path();
+        self.context.set_line_cap("square");
         if let Some(start) = path.next() {
             self.set_line_style(style);
-            self.context.move_to(f64::from(start.0), f64::from(start.1));
+            self.context
+                .move_to(to_f64_offset(start.0), to_f64_offset(start.1));
             for next in path {
-                self.context.line_to(f64::from(next.0), f64::from(next.1));
+                self.context
+                    .line_to(to_f64_offset(next.0), to_f64_offset(next.1));
             }
         }
         self.context.stroke();
@@ -190,9 +200,11 @@ impl DrawingBackend for CanvasBackend {
         if let Some(start) = path.next() {
             self.context
                 .set_fill_style(&make_canvas_color(style.color()));
-            self.context.move_to(f64::from(start.0), f64::from(start.1));
+            self.context
+                .move_to(to_f64_offset(start.0), to_f64_offset(start.1));
             for next in path {
-                self.context.line_to(f64::from(next.0), f64::from(next.1));
+                self.context
+                    .line_to(to_f64_offset(next.0), to_f64_offset(next.1));
             }
             self.context.close_path();
         }
@@ -219,8 +231,8 @@ impl DrawingBackend for CanvasBackend {
         self.context.begin_path();
         self.context
             .arc(
-                f64::from(center.0),
-                f64::from(center.1),
+                to_f64_offset(center.0),
+                to_f64_offset(center.1),
                 f64::from(radius),
                 0.0,
                 std::f64::consts::PI * 2.0,
