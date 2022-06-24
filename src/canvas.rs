@@ -11,8 +11,10 @@ use plotters_backend::{
 /// The backend that is drawing on the HTML canvas
 /// TODO: Support double buffering
 pub struct CanvasBackend {
-    canvas: HtmlCanvasElement,
+    _canvas: HtmlCanvasElement,
     context: CanvasRenderingContext2d,
+    width: u32,
+    height: u32,
 }
 
 pub struct CanvasError(String);
@@ -42,7 +44,52 @@ impl std::error::Error for CanvasError {}
 impl CanvasBackend {
     fn init_backend(canvas: HtmlCanvasElement) -> Option<Self> {
         let context: CanvasRenderingContext2d = canvas.get_context("2d").ok()??.dyn_into().ok()?;
-        Some(CanvasBackend { canvas, context })
+
+        let device_pixel_ratio = web_sys::window()
+            .map(|win| win.device_pixel_ratio())
+            .unwrap_or(1.0);
+        let (width, height) = if device_pixel_ratio == 1.0 {
+            (canvas.width(), canvas.height())
+        } else {
+            // Adjust the canvas for a `device_pixel_ratio` != 1.0. In that case we
+            // will scale the canvas by a fator of `device_pixel_ratio` up but limit
+            // it's actual size via css width and height to the original. So it is
+            // scaled up and down, resulting in a clear image.
+            // We need to make sure that we remember the original canvas size in
+            // `"data-orig-width"` and `"data-orig-height"` so that the canvas can
+            // be rendered on multiple times without scaling it up each time.
+            let width = canvas
+                .get_attribute("data-orig-width")
+                .and_then(|data| data.parse().ok())
+                .unwrap_or_else(|| {
+                    let width = canvas.width();
+                    let _ = canvas.set_attribute("data-orig-width", &width.to_string());
+                    width
+                });
+            let height = canvas
+                .get_attribute("data-orig-height")
+                .and_then(|data| data.parse().ok())
+                .unwrap_or_else(|| {
+                    let height = canvas.height();
+                    let _ = canvas.set_attribute("data-orig-height", &height.to_string());
+                    height
+                });
+            canvas.set_width((width as f64 * device_pixel_ratio) as _);
+            canvas.set_height((height as f64 * device_pixel_ratio) as _);
+            let _ = canvas.style().set_property("width", &format!("{width}px"));
+            let _ = canvas
+                .style()
+                .set_property("height", &format!("{height}px"));
+            let _ = context.scale(device_pixel_ratio, device_pixel_ratio);
+            (width, height)
+        };
+
+        Some(CanvasBackend {
+            _canvas: canvas,
+            context,
+            width,
+            height,
+        })
     }
 
     /// Create a new drawing backend backed with an HTML5 canvas object with given Id
@@ -80,7 +127,7 @@ impl DrawingBackend for CanvasBackend {
     type ErrorType = CanvasError;
 
     fn get_size(&self) -> (u32, u32) {
-        (self.canvas.width(), self.canvas.height())
+        (self.width, self.height)
     }
 
     fn ensure_prepared(&mut self) -> Result<(), DrawingErrorKind<CanvasError>> {
@@ -280,8 +327,7 @@ impl DrawingBackend for CanvasBackend {
         };
         self.context.set_text_align(text_align);
 
-        self.context
-            .set_fill_style(&make_canvas_color(color.clone()));
+        self.context.set_fill_style(&make_canvas_color(color));
         self.context.set_font(&format!(
             "{} {}px {}",
             style.style().as_str(),
