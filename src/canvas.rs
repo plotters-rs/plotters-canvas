@@ -117,10 +117,11 @@ impl DrawingBackend for CanvasBackend {
             return Ok(());
         }
 
+        let (from, to) = fine_hor_ver_lines(from, to);
         self.set_line_style(style);
         self.context.begin_path();
-        self.context.move_to(f64::from(from.0), f64::from(from.1));
-        self.context.line_to(f64::from(to.0), f64::from(to.1));
+        self.context.move_to(from.0, from.1);
+        self.context.line_to(to.0, to.1);
         self.context.stroke();
         Ok(())
     }
@@ -298,6 +299,23 @@ impl DrawingBackend for CanvasBackend {
 
         Ok(())
     }
+}
+
+/// Move line coord to left/right half pixel if the line is vertical/horizontal
+/// to prevent line blurry in canvas, see https://stackoverflow.com/a/13879322/10651567
+/// and https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors#a_linewidth_example
+fn fine_hor_ver_lines(from: BackendCoord, end: BackendCoord) -> ((f64, f64), (f64, f64)) {
+    let mut from = (from.0 as f64, from.1 as f64);
+    let mut end = (end.0 as f64, end.1 as f64);
+    if from.0 == end.0 {
+        from.0 -= 0.5;
+        end.0 -= 0.5;
+    }
+    if from.1 == end.1 {
+        from.1 -= 0.5;
+        end.1 -= 0.5;
+    }
+    (from, end)
 }
 
 #[cfg(test)]
@@ -532,5 +550,26 @@ mod test {
         }
 
         check_content(&document, "test_draw_pixel_alphas");
+    }
+
+    #[test]
+    fn test_fine_hor_ver_lines() {
+        // not horizontal nor vertical
+        assert_eq!(
+            ((10.0, 10.0), (20.0, 20.0)),
+            fine_hor_ver_lines((10.0, 10.0), (20.0, 20.0))
+        );
+
+        // vertical
+        assert_eq!(
+            ((9.5, 10.0), (19.5, 10.0)),
+            fine_hor_ver_lines((10.0, 10.0), (20.0, 10.0))
+        );
+
+        // horizontal
+        assert_eq!(
+            ((10.0, 9.5), (10.0, 19.5)),
+            fine_hor_ver_lines((10.0, 10.0), (10.0, 20.0))
+        );
     }
 }
