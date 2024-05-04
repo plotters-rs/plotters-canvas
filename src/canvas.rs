@@ -556,19 +556,19 @@ mod test {
         // not horizontal nor vertical
         assert_eq!(
             ((10.0, 10.0), (20.0, 20.0)),
-            fine_hor_ver_lines((10.0, 10.0), (20.0, 20.0))
+            fine_hor_ver_lines((10, 10), (20, 20))
         );
 
         // vertical
         assert_eq!(
             ((9.5, 10.0), (19.5, 10.0)),
-            fine_hor_ver_lines((10.0, 10.0), (20.0, 10.0))
+            fine_hor_ver_lines((10, 10), (20, 10))
         );
 
         // horizontal
         assert_eq!(
             ((10.0, 9.5), (10.0, 19.5)),
-            fine_hor_ver_lines((10.0, 10.0), (10.0, 20.0))
+            fine_hor_ver_lines((10, 10), (10, 20))
         );
     }
 }
