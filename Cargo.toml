@@ -2,17 +2,18 @@
 name = "plotters-canvas"
 version = "0.3.1"
 authors = ["Hao Hou <haohou302@gmail.com>"]
-edition = "2018"
+edition = "2021"
 license = "MIT"
 description = "Plotters HTML5 Canvas Backend"
 homepage = "https://plotters-rs.github.io"
 repository = "https://github.com/plotters-rs/plotters-canvas"
 readme = "README.md"
+resolver = "2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.plotters-backend]
-git = "https://github.com/plotters-rs/plotters"
+version = "0.3"
 
 [dependencies]
 js-sys= "0.3.32"
@@ -27,4 +28,4 @@ wasm-bindgen-test = "^0.3.17"
 
 [dev-dependencies.plotters]
 default_features = false
-git = "https://github.com/plotters-rs/plotters"
+version = "0.3"
