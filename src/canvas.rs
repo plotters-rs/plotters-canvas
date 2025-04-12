@@ -65,15 +65,15 @@ impl CanvasBackend {
     /// Sets the stroke style and line width in the underlying context.
     fn set_line_style(&mut self, style: &impl BackendStyle) {
         self.context
-            .set_stroke_style(&make_canvas_color(style.color()));
+            .set_stroke_style_str(&make_canvas_color(style.color()));
         self.context.set_line_width(style.stroke_width() as f64);
     }
 }
 
-fn make_canvas_color(color: BackendColor) -> JsValue {
+fn make_canvas_color(color: BackendColor) -> String {
     let (r, g, b) = color.rgb;
     let a = color.alpha;
-    format!("rgba({},{},{},{})", r, g, b, a).into()
+    format!("rgba({},{},{},{})", r, g, b, a)
 }
 
 impl DrawingBackend for CanvasBackend {
@@ -101,7 +101,7 @@ impl DrawingBackend for CanvasBackend {
         }
 
         self.context
-            .set_fill_style(&make_canvas_color(style.color()));
+            .set_fill_style_str(&make_canvas_color(style.color()));
         self.context
             .fill_rect(f64::from(point.0), f64::from(point.1), 1.0, 1.0);
         Ok(())
@@ -138,7 +138,7 @@ impl DrawingBackend for CanvasBackend {
         }
         if fill {
             self.context
-                .set_fill_style(&make_canvas_color(style.color()));
+                .set_fill_style_str(&make_canvas_color(style.color()));
             self.context.fill_rect(
                 f64::from(upper_left.0),
                 f64::from(upper_left.1),
@@ -190,7 +190,7 @@ impl DrawingBackend for CanvasBackend {
         self.context.begin_path();
         if let Some(start) = path.next() {
             self.context
-                .set_fill_style(&make_canvas_color(style.color()));
+                .set_fill_style_str(&make_canvas_color(style.color()));
             self.context.move_to(f64::from(start.0), f64::from(start.1));
             for next in path {
                 self.context.line_to(f64::from(next.0), f64::from(next.1));
@@ -213,7 +213,7 @@ impl DrawingBackend for CanvasBackend {
         }
         if fill {
             self.context
-                .set_fill_style(&make_canvas_color(style.color()));
+                .set_fill_style_str(&make_canvas_color(style.color()));
         } else {
             self.set_line_style(style);
         }
@@ -281,7 +281,7 @@ impl DrawingBackend for CanvasBackend {
         self.context.set_text_align(text_align);
 
         self.context
-            .set_fill_style(&make_canvas_color(color.clone()));
+            .set_fill_style_str(&make_canvas_color(color.clone()));
         self.context.set_font(&format!(
             "{} {}px {}",
             style.style().as_str(),

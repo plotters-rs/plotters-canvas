@@ -27,5 +27,5 @@ features = ['Document', 'DomRect', 'Element', 'HtmlElement', 'Node', 'Window', '
 wasm-bindgen-test = "^0.3.17"
 
 [dev-dependencies.plotters]
-default_features = false
+default-features = false
 version = "0.3"
