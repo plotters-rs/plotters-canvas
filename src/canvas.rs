@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use js_sys::JSON;
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{window, CanvasRenderingContext2d, HtmlCanvasElement};
@@ -80,7 +81,13 @@ impl DrawingBackend for CanvasBackend {
     type ErrorType = CanvasError;
 
     fn get_size(&self) -> (u32, u32) {
-        (self.canvas.width(), self.canvas.height())
+        let style = window().unwrap()
+          .get_computed_style(&self.canvas)
+          .unwrap().unwrap();
+        let width = style.get_property_value("width").unwrap().replace("px", "");
+        let height = style.get_property_value("height").unwrap().replace("px", "");
+        (u32::from_str(&width).unwrap(),
+         u32::from_str(&height).unwrap())
     }
 
     fn ensure_prepared(&mut self) -> Result<(), DrawingErrorKind<CanvasError>> {
